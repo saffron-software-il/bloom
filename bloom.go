@@ -74,7 +74,7 @@ func scrapePages(driver drivers.Driver, idx *index.Index, paths []string) (error
 	return nil, true
 }
 
-func generate(t, url string, skipExists bool) (error, bool) {
+func generate(t, url string, skipExists bool, outputPath string) (error, bool) {
 	// Figure out which generator to use
 	if len(t) == 0 {
 		var builder strings.Builder
@@ -86,6 +86,14 @@ func generate(t, url string, skipExists bool) (error, bool) {
 		}
 
 		return errors.New(builder.String()), false
+	}
+
+	// Output that is not the temp directory might require creating it first
+	if outputPath != os.TempDir() {
+		err := os.MkdirAll(outputPath, os.ModePerm)
+		if err != nil {
+			return err, false
+		}
 	}
 
 	index, err := index.NewIndex("temp/index.db")
@@ -130,6 +138,7 @@ func main() {
 	generateType := generateCmd.String("type", "", "The documentation type to generate")
 	generateUrl := generateCmd.String("url", "", "The URL to use")
 	generateSkipDownload := generateCmd.Bool("skip-exists", false, "Skip downloading sources if files exist")
+	generateOutput := generateCmd.String("output", os.TempDir(), "The output directory for all files")
 
 	if len(os.Args) == 1 {
 		fmt.Println("Error: too few arguments")
@@ -139,7 +148,7 @@ func main() {
 	switch os.Args[1] {
 	case "generate":
 		generateCmd.Parse(os.Args[2:])
-		if err, ok := generate(*generateType, *generateUrl, *generateSkipDownload); !ok {
+		if err, ok := generate(*generateType, *generateUrl, *generateSkipDownload, *generateOutput); !ok {
 			fmt.Fprintf(os.Stderr, "Error generating documentation: %v", err)
 			os.Exit(-1)
 		}

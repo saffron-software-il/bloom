@@ -10,7 +10,7 @@
       "request": "launch",
       "mode": "debug",
       "program": "${workspaceFolder}/bloom.go",
-      "args": ["generate", "-type=python", "-skip-exists"]
+      "args": ["generate", "-type=python", "-skip-exists", "-output=./temp"]
     }
   ]
 }
