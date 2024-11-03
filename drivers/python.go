@@ -47,8 +47,6 @@ func symStringToType(str string) (error, index.EntryType) {
 		return nil, index.Macro
 	case "method":
 		return nil, index.Method
-	case "module":
-		return nil, index.Module
 	case "object":
 		return nil, index.Object
 	case "type":
@@ -208,6 +206,13 @@ func (p *PythonDriver) ScrapePage(filePath string, data []byte) (error, *index.I
 	}
 
 	buffer := index.NewIndexBuffer()
+
+	elem := doc.Find("h1 > code > span").First()
+	if moduleName := elem.Text(); len(moduleName) != 0 {
+		modEntry := index.NewIndexEntry(moduleName, filePath, index.Module)
+		buffer.AddEntry(modEntry)
+	}
+
 	doc.Find("dl").Each(func(i int, dl *goquery.Selection) {
 		dlClass, classExists := dl.Attr("class")
 		if !classExists {
